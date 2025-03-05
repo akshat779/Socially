@@ -17,6 +17,9 @@ export default function ModeToggle(){
         //     <MoonIcon className="absolute h-[1.2rem]/>"
 
         // </Button>
+        <>
         <h1>Theme</h1>
+        <h2>Making Progress</h2>
+        </>
     )
 }

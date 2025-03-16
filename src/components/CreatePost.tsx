@@ -54,7 +54,7 @@ export default function CreatePost() {
                         placeholder="What's on your mind?"
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
-                        className="min-h-[100px] resize-none border-none focus-visible:ring-0 p-0 text-base"
+                        className="min-h-[100px] resize-none border-none focus-visible:ring-0 text-base"
                         disabled={isPosting} />
                 </div>
 

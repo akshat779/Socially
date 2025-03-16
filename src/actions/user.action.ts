@@ -3,28 +3,28 @@
 import prisma from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server"
 
-export async function syncUser(){
- 
-    try{
-        const {userId} = await auth()
+export async function syncUser() {
+
+    try {
+        const { userId } = await auth()
         const user = await currentUser();
 
-        if (!userId || !user){
+        if (!userId || !user) {
             return;
         }
         const existingUser = await prisma.user.findUnique({
-            where:{
+            where: {
                 clerkId: userId
             }
         })
-        if(existingUser){
+        if (existingUser) {
             return existingUser;
         }
 
         const dbUser = await prisma.user.create({
-            data:{
+            data: {
                 clerkId: userId,
-                name : `${user.firstName || ""} ${user.lastName || ""}`,
+                name: `${user.firstName || ""} ${user.lastName || ""}`,
                 username: user.username ?? user.emailAddresses[0].emailAddress.split('@')[0],
                 email: user.emailAddresses[0].emailAddress,
                 image: user.imageUrl,
@@ -32,38 +32,101 @@ export async function syncUser(){
             }
         })
         return dbUser;
-    }catch(error){
+    } catch (error) {
         console.log(`error in SyncUser ${error}`)
     }
 }
 
-export async function getUserByClerkId(id:string){
-   
+export async function getUserByClerkId(id: string) {
+
     return await prisma.user.findUnique({
-        where:{
-            clerkId : id
-        },include:{
-            _count:{
-                select:{
-                    followers:true,
-                    following:true,
-                    posts:true
+        where: {
+            clerkId: id
+        }, include: {
+            _count: {
+                select: {
+                    followers: true,
+                    following: true,
+                    posts: true
                 }
             }
         }
     })
 }
 
-export async function getDbUserId(){
-    const {userId:clerkId} = await auth();
-    if(!clerkId){
+export async function getDbUserId() {
+    const { userId: clerkId } = await auth();
+    if (!clerkId) {
         throw new Error("Unauthenticated")
     }
 
     const user = await getUserByClerkId(clerkId);
-    if(!user){
+    if (!user) {
         throw new Error("User not found")
     }
 
     return user.id;
+}
+
+export async function getRandomUsers() {
+    try {
+        const userId = await getDbUserId();
+        const users = await prisma.user.findMany({
+            where: {
+                AND: [
+                    { NOT: { id: userId } },
+                    {
+                        NOT: {
+                            followers: { 
+                                some: {
+                                    followerId: userId
+                                }
+                            }
+                        }
+                    }
+                ]
+            },
+            select: {
+                id: true,
+                name: true,
+                username: true,
+                image: true,
+                _count: {
+                    select: {
+                        followers: true,
+                    }
+                }
+            },
+            take: 3,
+        })
+
+        return users;
+    }
+    catch (error) {
+        console.log(`Error in fetching random Users ${error}`)
+    }
+
+}
+
+async function toggleFollow(targetUserId: string){
+    try{
+        const userId = await getDbUserId();
+        if(userId ===targetUserId){
+            throw new Error("Cannot follow Yourself")
+        }
+        const existingFollow = await prisma.follows.findUnique({
+            where:{
+                followerId_followingId:{
+                    followerId:userId,
+                    followingId:targetUserId
+                }
+            }
+        })
+        if(existingFollow){
+            // unfollow
+        }
+        else{
+            // follow
+        }
+    }
 }

@@ -38,6 +38,7 @@ export async function getPosts(){
             include:{
                 author:{
                     select:{
+                        id:true,
                         name:true,
                         image:true,
                         username:true
@@ -202,6 +203,40 @@ export async function createComment(postId:string, content:string){
     }
     catch(error){
         console.log(`Error in CreateComment ${error}`)  
+        return {success:false}
+    }
+}
+
+export async function deletePost(postId:string){
+    try{
+        const userId = await getDbUserId();
+        if(!userId){
+            return;
+        }
+        const post = await prisma.post.findUnique({
+            where:{
+                id:postId
+            },
+            select:{
+                authorId:true
+            }
+        })
+        if(!post){
+            throw new Error("Post not Found")
+        }
+        if(post.authorId !== userId){
+            throw new Error("Unauthorized") 
+        }
+        await prisma.post.delete({
+            where:{
+                id:postId
+            }
+        })
+        revalidatePath('/')
+        return {success:true}
+    }
+    catch(error){
+        console.log(`Error in DeletePost ${error}`) 
         return {success:false}
     }
 }

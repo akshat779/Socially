@@ -13,7 +13,7 @@ import { Button } from "./ui/button";
 import { HeartIcon, LogInIcon, MessageCircleIcon, SendIcon } from "lucide-react";
 import { Textarea } from "./ui/textarea";
 
-type Posts = Awaited<ReturnType<typeof getPosts>>;
+type Posts = NonNullable<Awaited<ReturnType<typeof getPosts>>>;
 type Post = Posts[number];
 
 function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
@@ -62,8 +62,9 @@ function PostCard({ post, dbUserId }: { post: Post; dbUserId: string | null }) {
     try {
       setIsDeleting(true);
       const result = await deletePost(post.id);
+      if (!result) throw new Error("Failed to delete post");
       if (result.success) toast.success("Post deleted successfully");
-      else throw new Error(result.error);
+      else throw new Error("Failed to delete post");
     } catch (error) {
       toast.error("Failed to delete post");
     } finally {

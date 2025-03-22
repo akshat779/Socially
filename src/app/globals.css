@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@import "uploadthing/tw/v4";
+@source "../../node_modules/@uploadthing/dist"; 
 
 @plugin "tailwindcss-animate";
 
@@ -124,3 +126,5 @@
     @apply bg-background text-foreground;
   }
 }
+
+

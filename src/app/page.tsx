@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
-import { SignedIn, SignedOut, SignInButton, SignUpButton, UserButton } from "@clerk/nextjs";
-import ModeToggle from "@/components/ModeToggle";
+
 import { currentUser } from "@clerk/nextjs/server";
 import CreatePost from "@/components/CreatePost";
 import WhoToFollow from "@/components/WhoToFollow";
